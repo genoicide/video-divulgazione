@@ -1,0 +1,17 @@
+{
+  "name": "video-divulgazione",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verifica": "node scripts/verifica.mjs",
+    "verifica:completo": "node scripts/verifica.mjs --completo",
+    "prova-render": "remotion render src/index.js Prova out/prova.mp4",
+    "studio": "remotion studio src/index.js"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.545",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.545"
+  }
+}

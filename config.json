@@ -1,0 +1,43 @@
+{
+  "_nota": "Impostazioni condivise e profili dei computer. Sta nel repository. Il profilo in uso si sceglie in config.local.json.",
+  "driveDir": "Z:\\Il mio Drive\\Lavoro\\Mattia Mazzocchio\\Ricerca - Sound design - Composizione\\AI Video editor",
+  "workDir": "C:\\Claude\\AI-Video\\VideoLavoro",
+  "predefiniti": {
+    "formati": [
+      "9:16",
+      "1:1"
+    ],
+    "uscite": [
+      "montato",
+      "semimontato"
+    ]
+  },
+  "profili": {
+    "studio": {
+      "whisper": {
+        "tool": "faster-whisper",
+        "model": "medium",
+        "device": "cpu",
+        "language": "it",
+        "compute_type": "int8"
+      },
+      "render": {
+        "concurrency": 6,
+        "encoder": "libx264"
+      }
+    },
+    "portatile": {
+      "whisper": {
+        "tool": "faster-whisper",
+        "model": "medium",
+        "device": "cuda",
+        "language": "it",
+        "compute_type": "int8_float16"
+      },
+      "render": {
+        "concurrency": 2,
+        "encoder": "libx264"
+      }
+    }
+  }
+}
