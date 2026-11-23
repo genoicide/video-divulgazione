@@ -39,17 +39,25 @@ if (tieni.length === 0) fine("tutti i tagli cancellano l'episodio intero: contro
 // Filtro FFmpeg: ritaglia ogni parte (video e audio insieme) e le unisce
 const f = [];
 tieni.forEach(([a, b], i) => {
-  f.push(`[0:v]trim=start=${a}:end=${b},setpts=PTS-STARTPTS,scale=-2:540[v${i}]`);
+  f.push(`[0:v]trim=start=${a}:end=${b},setpts=PTS-STARTPTS[v${i}]`);
   f.push(`[0:a]atrim=start=${a}:end=${b},asetpts=PTS-STARTPTS[a${i}]`);
 });
-f.push(tieni.map((_, i) => `[v${i}][a${i}]`).join("") + `concat=n=${tieni.length}:v=1:a=1[v][a]`);
-const copione = join(c.workDir, episodio, "anteprima-filtro.txt");
-writeFileSync(copione, f.join(";\n"), "utf8");
+f.push(tieni.map((_, i) => `[v${i}][a${i}]`).join("") + `concat=n=${tieni.length}:v=1:a=1[vc][a]`);
+f.push("[vc]scale=-2:540[v]");
+const filtro = f.join(";");
+// Il filtro va nella riga di comando (funziona con ogni versione di FFmpeg). Windows accetta circa 32.000 caratteri:
+// per episodi con moltissimi tagli si passa dal file, con la sintassi -/filter_complex (FFmpeg 7 o piu' recente).
+let opzioneFiltro = ["-filter_complex", filtro];
+if (filtro.length > 24000) {
+  const copione = join(c.workDir, episodio, "anteprima-filtro.txt");
+  writeFileSync(copione, filtro, "utf8");
+  opzioneFiltro = ["-/filter_complex", copione];
+}
 
 const uscita = join(c.workDir, episodio, "anteprima.mp4");
 const finale = tieni.reduce((n, [a, b]) => n + (b - a), 0);
 console.log(`Costruisco l'anteprima: ${attivi.length} tagli attivi, da ${durata.toFixed(1)} s a circa ${finale.toFixed(1)} s...`);
-const ff = spawnSync("ffmpeg", ["-y", "-hide_banner", "-v", "error", "-stats", "-i", video, "-filter_complex_script", copione,
+const ff = spawnSync("ffmpeg", ["-y", "-hide_banner", "-v", "error", "-stats", "-i", video, ...opzioneFiltro,
   "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "26", "-c:a", "aac", "-b:a", "128k", uscita], { stdio: "inherit" });
 if (ff.status !== 0) fine("FFmpeg non ha finito l'anteprima.");
 console.log(`\nFatto. Anteprima: ${uscita}\nApri il file con doppio clic: guarda se le pause tagliate suonano naturali.`);
