@@ -2,6 +2,11 @@
   "_nota": "Impostazioni condivise e profili dei computer. Sta nel repository. Il profilo in uso si sceglie in config.local.json.",
   "driveDir": "Z:\\Il mio Drive\\Lavoro\\Mattia Mazzocchio\\Ricerca - Sound design - Composizione\\AI Video editor",
   "workDir": "C:\\Claude\\AI-Video\\VideoLavoro",
+  "tagli": {
+    "rumoreDb": -35,
+    "pausaMinima": 0.6,
+    "pausaResidua": 0.3
+  },
   "predefiniti": {
     "formati": [
       "9:16",

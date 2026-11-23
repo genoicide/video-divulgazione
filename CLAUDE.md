@@ -11,7 +11,7 @@ Progetto di Mattia Mazzocchio. Obiettivo: montare in automatico video divulgativ
 
 ## Fasi (separabili, riavviabili)
 1. Trascrizione (Whisper, lingua it): `npm run trascrivi -- <episodio>` (script `scripts/trascrivi.mjs` e `scripts/trascrivi.py`) -> `dati\trascrizione.json` (segmenti e parole con i tempi), `.srt` e `.txt`
-2. Tagli (silenzi, ripetizioni, errori) -> `dati\tagli.json`, da mostrare a Mattia prima del render
+2. Tagli (silenzi, ripetizioni, errori) -> `dati\tagli.json` e `tagli.txt`, da mostrare a Mattia prima del render. Le pause si trovano con `npm run tagli -- <episodio>` (`scripts/tagli.mjs`, parametri in `config.json`, sezione `tagli`); ripetizioni ed errori di parlato: da costruire
 3. Render: montato 9:16 e 1:1 (sottotitoli e grafiche incollati)
 4. Semimontato per Filmora: timeline XML FCP7 con i tagli + SRT + clip grafiche WebM VP9 alpha + media collegati
 
