@@ -10,7 +10,7 @@ Progetto di Mattia Mazzocchio. Obiettivo: montare in automatico video divulgativ
 - Esegui `npm run verifica` a inizio sessione su un computer nuovo e dopo ogni installazione.
 
 ## Fasi (separabili, riavviabili)
-1. Trascrizione (Whisper, lingua it) -> `dati\trascrizione.json` e `.srt`
+1. Trascrizione (Whisper, lingua it): `npm run trascrivi -- <episodio>` (script `scripts/trascrivi.mjs` e `scripts/trascrivi.py`) -> `dati\trascrizione.json` (segmenti e parole con i tempi), `.srt` e `.txt`
 2. Tagli (silenzi, ripetizioni, errori) -> `dati\tagli.json`, da mostrare a Mattia prima del render
 3. Render: montato 9:16 e 1:1 (sottotitoli e grafiche incollati)
 4. Semimontato per Filmora: timeline XML FCP7 con i tagli + SRT + clip grafiche WebM VP9 alpha + media collegati

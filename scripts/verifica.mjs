@@ -61,9 +61,9 @@ if (c) {
       const n = esegui('python -c "import ctranslate2;print(ctranslate2.get_cuda_device_count())"').trim();
       Number(n) > 0
         ? ok(`CUDA: ${n} scheda NVIDIA vista da faster-whisper`)
-        : ko("CUDA: nessuna scheda NVIDIA vista da faster-whisper (driver o librerie CUDA mancanti: vedi il tutorial, passo 5)");
+        : ko("CUDA: nessuna scheda NVIDIA vista da faster-whisper (driver o librerie CUDA mancanti: vedi il tutorial, passo 11a)");
     } catch {
-      ko("CUDA: controllo non riuscito (ctranslate2 non risponde: vedi il tutorial, passo 5)");
+      ko("CUDA: controllo non riuscito (ctranslate2 non risponde: vedi il tutorial, passo 11a)");
     }
   }
 
