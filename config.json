@@ -7,6 +7,11 @@
     "pausaMinima": 0.6,
     "pausaResidua": 0.3
   },
+  "sottotitoli": {
+    "caratteriMax": 40,
+    "durataMax": 3.5,
+    "pausaDivide": 0.5
+  },
   "predefiniti": {
     "formati": [
       "9:16",

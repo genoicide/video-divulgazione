@@ -13,7 +13,7 @@ Progetto di Mattia Mazzocchio. Obiettivo: montare in automatico video divulgativ
 1. Trascrizione (Whisper, lingua it): `npm run trascrivi -- <episodio>` (script `scripts/trascrivi.mjs` e `scripts/trascrivi.py`) -> `dati\trascrizione.json` (segmenti e parole con i tempi), `.srt` e `.txt`
 2. Tagli (silenzi, ripetizioni, errori) -> `dati\tagli.json` e `tagli.txt`, da mostrare a Mattia prima del render. Le pause si trovano con `npm run tagli -- <episodio>` (`scripts/tagli.mjs`, parametri in `config.json`, sezione `tagli`); ripetizioni ed errori di parlato: da costruire. Anteprima leggera con i tagli applicati: `npm run anteprima -- <episodio>` (`scripts/anteprima.mjs`, file in `workDir\<episodio>\anteprima.mp4`)
 3. Render: montato 9:16 e 1:1 (sottotitoli e grafiche incollati)
-4. Semimontato per Filmora: timeline XML FCP7 con i tagli + SRT + clip grafiche WebM VP9 alpha + media collegati
+4. Semimontato per Filmora: timeline XML FCP7 con i tagli + SRT + clip grafiche WebM VP9 alpha + media collegati. Timeline XML (XMEML) e sottotitoli con i tempi del video tagliato: `npm run semimontato -- <episodio>` (`scripts/semimontato.mjs`, sottotitoli configurabili in `config.json`, sezione `sottotitoli`) -> `Export\<episodio>\semimontato\`; grafiche WebM alpha: da costruire. Filmora importa XML in formato FCP7/XMEML (File > Importa media > Importa timeline XML).
 
 ## Uscite predefinite
 Per ogni episodio: montato (9:16 e 1:1) e semimontato. Modalita' viaggio: solo fasi 1, 2 e semimontato; render finale rimandato.

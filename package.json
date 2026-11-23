@@ -8,6 +8,7 @@
     "trascrivi": "node scripts/trascrivi.mjs",
     "tagli": "node scripts/tagli.mjs",
     "anteprima": "node scripts/anteprima.mjs",
+    "semimontato": "node scripts/semimontato.mjs",
     "prova-render": "remotion render src/index.js Prova out/prova.mp4",
     "studio": "remotion studio src/index.js"
   },
