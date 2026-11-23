@@ -7,6 +7,7 @@
     "verifica:completo": "node scripts/verifica.mjs --completo",
     "trascrivi": "node scripts/trascrivi.mjs",
     "tagli": "node scripts/tagli.mjs",
+    "anteprima": "node scripts/anteprima.mjs",
     "prova-render": "remotion render src/index.js Prova out/prova.mp4",
     "studio": "remotion studio src/index.js"
   },
