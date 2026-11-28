@@ -1,12 +1,12 @@
-// Prepara il semimontato per Filmora: video gia' tagliato (timeline XML) e sottotitoli.
+// Prepara il semimontato per DaVinci Resolve (o Filmora 16+): video gia' tagliato (timeline XML) e sottotitoli.
 //   npm run semimontato -- 2026-11-23_prova
 // Prerequisito: npm run trascrivi e npm run tagli
 // Legge   <driveDir>\Girato\<episodio>\<video>  e  <driveDir>\Export\<episodio>\dati\  trascrizione.json, tagli.json (solo "attivo": true)
 // Scrive  <driveDir>\Export\<episodio>\semimontato\  <episodio>.xml (timeline FCP7/XMEML) e <episodio>.srt (sottotitoli con i tempi del video tagliato)
-// Il video originale non viene copiato ne' modificato: la timeline lo richiama dal suo percorso su Drive.
+// Il video originale non viene copiato ne' modificato: la timeline lo richiama dal suo percorso su Drive. Se il frame rate non e' standard, usa invece una copia a frame rate costante in workDir.
 // In Filmora: File > Importa media > Importa timeline XML, poi importa l'SRT.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { caricaConfig } from "./config.mjs";
 
@@ -25,18 +25,35 @@ if (!existsSync(fileTagli) || !existsSync(fileTrascr))
   fine(`mancano trascrizione o tagli: prima lancia npm run trascrivi -- ${episodio} e poi npm run tagli -- ${episodio}`);
 const trascr = JSON.parse(readFileSync(fileTrascr, "utf8"));
 const { tagli } = JSON.parse(readFileSync(fileTagli, "utf8"));
-const video = join(c.driveDir, "Girato", episodio, trascr.file);
-if (!existsSync(video)) fine(`video non trovato: ${video}`);
+const videoOriginale = join(c.driveDir, "Girato", episodio, trascr.file);
+if (!existsSync(videoOriginale)) fine(`video non trovato: ${videoOriginale}`);
 
 // 1. Informazioni sul video (FFmpeg/ffprobe)
-const pr = spawnSync("ffprobe", ["-v", "error", "-show_entries", "stream=codec_type,width,height,r_frame_rate,channels,sample_rate", "-of", "json", video], { encoding: "utf8" });
+const pr = spawnSync("ffprobe", ["-v", "error", "-show_entries", "stream=codec_type,width,height,r_frame_rate,channels,sample_rate", "-of", "json", videoOriginale], { encoding: "utf8" });
 if (pr.status !== 0) fine("ffprobe non riesce a leggere il video.");
 const flussi = JSON.parse(pr.stdout).streams;
 const v = flussi.find((s) => s.codec_type === "video");
 const a = flussi.find((s) => s.codec_type === "audio");
 if (!v) fine("il file non ha una traccia video.");
 const [num, den] = v.r_frame_rate.split("/").map(Number);
-const fps = num / (den || 1);
+let fps = num / (den || 1);
+// XMEML sa descrivere solo frame rate standard (24, 25, 30, 50, 60 e i loro 1000/1001). Con un valore diverso
+// (es. 31.579 fps, tipico di registrazioni da schermo o da telefono) i punti di taglio scivolerebbero:
+// in quel caso si usa una copia a frame rate costante, in workDir (mai su Drive), e la timeline richiama quella.
+const standard = [23.976, 24, 25, 29.97, 30, 47.952, 48, 50, 59.94, 60];
+let video = videoOriginale;
+if (!standard.some((f) => Math.abs(f - fps) < 0.01)) {
+  const bersaglio = [24, 25, 30, 50, 60].reduce((m, f) => (Math.abs(f - fps) < Math.abs(m - fps) ? f : m));
+  const copia = join(c.workDir, episodio, `${trascr.file.replace(/\.[^.]+$/, "")}_${bersaglio}fps.mp4`);
+  console.log(`Frame rate non standard (${fps.toFixed(3)} fps): preparo una copia a ${bersaglio} fps costanti in ${copia}`);
+  if (!existsSync(copia) || statSync(copia).mtimeMs < statSync(videoOriginale).mtimeMs) {
+    mkdirSync(join(c.workDir, episodio), { recursive: true });
+    const r = spawnSync("ffmpeg", ["-y", "-v", "error", "-i", videoOriginale, "-vf", `fps=${bersaglio}`, "-c:v", "libx264", "-preset", "veryfast", "-crf", "14", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", copia], { stdio: "inherit" });
+    if (r.status !== 0) fine("la conversione a frame rate costante non e' riuscita.");
+  }
+  video = copia;
+  fps = bersaglio;
+}
 const timebase = Math.round(fps);
 const ntsc = Math.abs(timebase - fps) > 0.01;
 const larghezza = v.width, altezza = v.height;
@@ -78,7 +95,7 @@ const mappa = (sec) => {
 // 4. File XML (FCP7 / XMEML versione 4)
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const rate = `<rate><timebase>${timebase}</timebase><ntsc>${ntsc ? "TRUE" : "FALSE"}</ntsc></rate>`;
-const nomeVideo = trascr.file;
+const nomeVideo = video.split(/[\\/]/).pop();
 const percorso = "file://localhost/" + video.replace(/\\/g, "/").split("/").map(encodeURIComponent).join("/").replace(/^([A-Za-z])%3A/, "$1:");
 const fileDef = `<file id="file-1"><name>${esc(nomeVideo)}</name><pathurl>${esc(percorso)}</pathurl>${rate}<duration>${durataSorgente}</duration>` +
   `<timecode>${rate}<string>00:00:00:00</string><frame>0</frame><displayformat>NDF</displayformat></timecode>` +
@@ -141,4 +158,4 @@ mkdirSync(cartella, { recursive: true });
 writeFileSync(join(cartella, `${episodio}.xml`), xml, "utf8");
 writeFileSync(join(cartella, `${episodio}.srt`), righe.join("\n"), "utf8");
 console.log(`\nFatto: ${clip.length} clip, durata ${(totale / fps).toFixed(1)} s (originale ${trascr.durata.toFixed(1)} s), ${righe.length} sottotitoli.`);
-console.log(`Risultati in: ${cartella}\n  ${episodio}.xml   timeline da importare in Filmora\n  ${episodio}.srt   sottotitoli con i tempi del video tagliato`);
+console.log(`Risultati in: ${cartella}\n  ${episodio}.xml   timeline da importare (DaVinci Resolve: File > Import > Timeline)\n  ${episodio}.srt   sottotitoli con i tempi del video tagliato`);
